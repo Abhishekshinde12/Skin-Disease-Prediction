@@ -1,14 +1,17 @@
-// src/components/UploadPage.js
+// src/components/Upload.js
 
 import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { ArrowUpOnSquareIcon, PhotoIcon, XCircleIcon, ArrowPathIcon } from '@heroicons/react/24/solid';
-import { Link } from 'react-router-dom'; // Assuming you're using react-router
+import { Link, useNavigate } from 'react-router-dom'; // Import useNavigate
+import usePredictionStore from '../store/predictionStore';
 
-const UploadPage = () => {
+const Upload = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  // Get state and actions from the store
+  const { isLoading, error, getResults } = usePredictionStore();
+  const navigate = useNavigate(); // Initialize the navigate function
 
   const onDrop = useCallback(acceptedFiles => {
     const file = acceptedFiles[0];
@@ -21,26 +24,19 @@ const UploadPage = () => {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: {
-      'image/jpeg': [],
-      'image/png': [],
-      'image/webp': [],
-    },
+    accept: { 'image/jpeg': [], 'image/png': [], 'image/webp': [] },
     multiple: false,
   });
 
-  const handlePredict = () => {
+  const handlePredict = async () => {
     if (!selectedFile) return;
-    
-    setIsLoading(true);
-    // Simulate API call
-    console.log("Making API call with file:", selectedFile.name);
-    setTimeout(() => {
-      setIsLoading(false);
-      // Here you would navigate to the results page with the API response
-      // For now, we just log it and reset.
-      alert("Prediction complete! (Simulated)");
-    }, 3000);
+
+    // Create a FormData object to send the file
+    const formData = new FormData();
+    formData.append('image', selectedFile); // 'image' should match your backend's expected field name
+
+    // Call the store action to handle the API calls and navigation
+    await getResults(formData, preview, navigate);
   };
 
   const handleRemoveImage = () => {
@@ -53,8 +49,8 @@ const UploadPage = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col">
-       {/* Header */}
-       <header className="bg-white shadow-sm">
+      {/* Header */}
+      <header className="bg-white shadow-sm">
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
           <Link to="/" className="text-2xl font-bold text-gray-800">DermAI</Link>
           <nav>
@@ -62,7 +58,7 @@ const UploadPage = () => {
           </nav>
         </div>
       </header>
-      
+
       {/* Main Content */}
       <main className="grow container mx-auto px-6 py-12 flex flex-col items-center justify-center">
         <div className="w-full max-w-2xl bg-white p-8 md:p-12 rounded-2xl shadow-lg border border-gray-200">
@@ -71,7 +67,7 @@ const UploadPage = () => {
             <p className="text-gray-600 mt-2">Get an AI-powered analysis of your skin concern.</p>
           </div>
 
-          {/* Upload Area */}
+          {/* Upload Area... (No changes needed here) */}
           {!preview ? (
             <div
               {...getRootProps()}
@@ -89,7 +85,6 @@ const UploadPage = () => {
               <p className="text-xs text-gray-400 mt-2">PNG, JPG, WEBP up to 10MB</p>
             </div>
           ) : (
-            // Image Preview
             <div className="w-full text-center">
                 <div className="relative inline-block">
                     <img src={preview} alt="Preview" className="w-auto h-64 max-h-64 rounded-lg shadow-md mx-auto" />
@@ -101,6 +96,13 @@ const UploadPage = () => {
                         <XCircleIcon className="h-8 w-8"/>
                     </button>
                 </div>
+            </div>
+          )}
+
+          {/* Display API Error if it exists */}
+          {error && (
+            <div className="mt-4 text-center text-red-600 bg-red-50 p-3 rounded-lg">
+              <p><strong>Prediction Failed:</strong> {error}</p>
             </div>
           )}
 
@@ -126,15 +128,8 @@ const UploadPage = () => {
           </div>
         </div>
       </main>
-
-      {/* Footer */}
-      <footer className="bg-gray-800 text-white py-6">
-        <div className="container mx-auto px-6 text-center">
-          <p className="text-sm text-gray-400">This tool does not provide medical advice. Always consult with a qualified healthcare professional.</p>
-        </div>
-      </footer>
     </div>
   );
 };
 
-export default UploadPage;
+export default Upload;

@@ -1,7 +1,8 @@
 import './App.css'
 import Home from './components/Home'
-import Prediction from './components/Prediction'
 import {Routes, Route} from 'react-router-dom'
+import Upload from './components/Upload'
+import Results from './components/Results'
 
 function App() {
 
@@ -9,7 +10,9 @@ function App() {
     <>
       <Routes>
         <Route path='/' element={<Home />} />
-        <Route path='/predict' element={<Prediction />} />
+        {/* <Route path='/predict' element={<Prediction />} /> */}
+        <Route path='/predict' element={<Upload />} />
+        <Route path='/results' element={<Results />} />
       </Routes>
     </>
   )

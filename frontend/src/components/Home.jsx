@@ -1,5 +1,3 @@
-// src/components/HomePage.js
-
 import React from 'react';
 import { ShieldCheckIcon, ArrowRightIcon, CloudArrowUpIcon, CpuChipIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 

@@ -1,5 +1,5 @@
 import Upload from "./Upload"
-import DiseaseInfoPage from "./DiseaseInfoPage"
+import DiseaseInfoPage from "./Results"
 
 const Prediction = () => {
   return (
