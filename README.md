@@ -23,7 +23,7 @@ DermAI is a web application that allows users to upload an image of a skin conce
 
 ## Installation
 ### 1. Backend Setup (Django)
-#### Step1 Create virtual env
+#### Step 1 Create virtual env
 First, navigate into the backend directory and set up the Django server.
 
 ```bash
@@ -38,21 +38,21 @@ venv\Scripts\activate
 source venv/bin/activate
 ```
 
-#### Step2 - Install Dependencies
+#### Step 2 - Install Dependencies
 ```pip install -r requirements.txt```
 
-#### Step3 - Create Media Directory - to store user uploaded image
+#### Step 3 - Create Media Directory - to store user uploaded image
 ```mkdir media```
 
-#### Step4 - Apply DB Migrations
+#### Step 4 - Apply DB Migrations
 ```python manage.py migrate```
 
-#### Step5 - Setup Env Variable
+#### Step 5 - Setup Env Variable
 ```bash
 # create an .env file and add your LLM API KEY, is using Gemini then add GOOGLE_API_KEY=YOUR_API_KEY
 ```
 
-#### Step 5: Run the Django Server
+#### Step 6: Run the Django Server
 The backend server will run on `http://localhost:8000`.
 
 ```python manage.py runserver```
@@ -60,11 +60,11 @@ The backend server will run on `http://localhost:8000`.
 ---
 
 ### 2. Frontend Setup 
-#### Step1 - Navigate to the frontend directory from the project root
+#### Step 1 - Navigate to the frontend directory from the project root
 ```cd frontend```
-#### Step2 - Install Dependencies
+#### Step 2 - Install Dependencies
 ```npm install```
-#### Step3 - Start React Dev Server
+#### Step 3 - Start React Dev Server
 ```npm run dev```
 
 ---
