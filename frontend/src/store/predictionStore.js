@@ -1,19 +1,27 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 
 // --- API Helper Functions (defined outside the store for clarity) ---
 // Helper 1: Predict the disease from the image
 const getDiseasePrediction = async (formData) => {
+  console.log(formData)
   const url = `/analytics/prediction/`;
   const response = await fetch(url, {
     method: "POST",
     body: formData,
   });
 
+    console.log("Inspecting FormData contents before sending inside store:");
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}:`, value);
+    }
+
   if (!response.ok) {
     throw new Error('Failed to get disease prediction.');
   }
-  return response.json();
+  const data = await response.json()
+  return data;
 };
 
 
@@ -35,46 +43,58 @@ const getAdditionalDetails = async (diseaseName) => {
 
 // --- Zustand Store Definition ---
 
-const usePredictionStore = create((set) => ({
-  isLoading: false,
-  error: null,
-  // This will hold the final, combined data for the results page
-  predictionResult: null, 
-  // Store the image URL to show it on the results page
-  uploadedImageUrl: null, 
+const usePredictionStore = create(
+  persist(
+    (set) => ({
+      isLoading: false,
+      error: null,
+      predictionResult: null,
+      uploadedImageUrl: null,
 
-  // The main action to run the entire prediction process
-  getResults: async (formData, imageUrl, navigate) => {
-    set({ isLoading: true, error: null, predictionResult: null, uploadedImageUrl: imageUrl });
+      getResults: async (formData, imageUrl, navigate) => {
+        set({ isLoading: true, error: null, predictionResult: null, uploadedImageUrl: imageUrl });
 
-    try {
-      // Step 1: Get the initial disease prediction (e.g., ['Eczema', 'Psoriasis'])
-      const predictionResponse = await getDiseasePrediction(formData);
-      console.log(predictionResponse)
-      
-      // We'll use the top prediction to get more details
-      const topDiseaseName = predictionResponse.predictions[0].name;
+        try {
+          const predictionResponse = await getDiseasePrediction(formData);
+          console.log(predictionResponse);
 
-      // Step 2: Get the detailed information for the top disease
-      const detailsResponse = await getAdditionalDetails(topDiseaseName);
+          const topDiseaseName = predictionResponse.predictions[0].name;
+          const detailsResponse = await getAdditionalDetails(topDiseaseName);
 
-      // Step 3: Combine the results into one object for the UI
-      const finalResult = {
-        image: imageUrl,
-        predictions: predictionResponse.predictions, // The list of all predictions
-        details: detailsResponse, // The detailed info for the top prediction
-      };
-      
-      set({ predictionResult: finalResult, isLoading: false });
+          let parsedDetails;
+          try {
+            parsedDetails = typeof detailsResponse === 'string'
+              ? JSON.parse(detailsResponse)  // parse string to object
+              : detailsResponse;
+          } catch (e) {
+            console.error("Failed to parse disease details:", e);
+            parsedDetails = {}; // fallback
+          }
 
-      // Step 4: Navigate to the results page on success
-      navigate('/results');
+          const finalResult = {
+            image: imageUrl,
+            predictions: predictionResponse.predictions,
+            details: parsedDetails,
+          };
 
-    } catch (error) {
-      console.error("Prediction failed:", error);
-      set({ error: error.message, isLoading: false });
+          set({ predictionResult: finalResult, isLoading: false });
+          console.log(finalResult)
+
+          navigate('/results');
+        } catch (error) {
+          console.error("Prediction failed:", error);
+          set({ error: error.message, isLoading: false });
+        }
+      },
+    }),
+    {
+      name: 'prediction-storage', // key name in localStorage
+      partialize: (state) => ({
+        predictionResult: state.predictionResult,
+        uploadedImageUrl: state.uploadedImageUrl,
+      }),
     }
-  },
-}));
+  )
+);
 
 export default usePredictionStore;

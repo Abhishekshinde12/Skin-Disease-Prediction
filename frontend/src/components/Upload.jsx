@@ -24,7 +24,8 @@ const Upload = () => {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: { 'image/jpeg': [], 'image/png': [], 'image/webp': [] },
+    // accept: { 'image/jpeg': [], 'image/png': [], 'image/webp': [] },
+    accept: { 'image/jpg': [], 'image/jpeg': []},
     multiple: false,
   });
 
@@ -34,6 +35,11 @@ const Upload = () => {
     // Create a FormData object to send the file
     const formData = new FormData();
     formData.append('image', selectedFile); // 'image' should match your backend's expected field name
+
+    console.log("Inspecting FormData contents before sending:");
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}:`, value);
+    }
 
     // Call the store action to handle the API calls and navigation
     await getResults(formData, preview, navigate);

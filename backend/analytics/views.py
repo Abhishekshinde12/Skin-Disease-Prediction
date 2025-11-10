@@ -1,57 +1,64 @@
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
-import os
+from rest_framework.parsers import MultiPartParser, FormParser
+from .serializers import MyModelSerializer
+from .models import MyModel
 
 # ml model imports
 from ml_model.model import predict
 from .services import structured_model
 
-# Create your views here.
-# this path exists only on the server, absolure path on backend file system 
-# where the file is physically stored on your server
-# file_path = 'uploads/skin_123.jpg'
 
-# public HTTP URL so frontend can access
-# full_path = '/Users/abhishek/project/media/uploads/skin_123.jpg'
 class GetModelPredictionAPIView(APIView):
-    def post(self, request):
-        image = request.FILES.get('image')
+    serializer_class = MyModelSerializer
+    parser_classes = [MultiPartParser, FormParser]
 
-        if not image:
-            return Response({"error": "No file uploaded"}, status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request, *args, **kwargs):
+        serializer = MyModelSerializer(data=request.data)
 
-        # temp save
-        file_path = default_storage.save(f'uploads/{image.name}', ContentFile(image.read()))
+        if not serializer.is_valid():
+            print(serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        # get full path to saved file
-        full_path = default_storage.path(file_path)
+        # Save the uploaded image to the database (and media folder)
+        instance = serializer.save()
+        print(instance.__dict__)
 
         try:
-            prediction_tuples = predict(full_path)
+            # Get the absolute path of the stored image file
+            image_path = instance.image
+            print(image_path)
+
+            # Run the ML model prediction
+            prediction_tuples = predict(image_path)
+            print(prediction_tuples)
+
             formatted_predictions = [
-                {"name": name, "confidence": round(confidence, 2)} for name, confidence in prediction_tuples
+                {"name": name, "confidence": round(confidence, 2)}
+                for name, confidence in prediction_tuples
             ]
-            response_data = {"predictions": formatted_predictions}
-            
+
+            response_data = {
+                "id": instance.id,
+                "name": instance.name,
+                "image_url": instance.image.url,
+                "predictions": formatted_predictions,
+            }
+
             return Response(response_data, status=status.HTTP_200_OK)
-        
+
         except Exception as e:
-            # Handle potential errors during prediction
-            return Response({"error": f"Prediction failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-        finally:
-            # Clean up the saved file after prediction
-            if default_storage.exists(file_path):
-                default_storage.delete(file_path)
+            return Response(
+                {"error": f"Prediction failed: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 
 class GetDiseaseInformationAPIView(APIView):
-    def post(self, request):
-        disease_name = request.POST.get('name', '')
+    def post(self, request, *args, **kwargs):
+        disease_name = request.data.get('name', '')
 
         if not disease_name:
             return Response({"error": "Disease name not provided"}, status=status.HTTP_400_BAD_REQUEST)
@@ -62,9 +69,8 @@ class GetDiseaseInformationAPIView(APIView):
 
         try:
             result = structured_model.invoke(prompt)
-            response_data = result.model_dump()
-            return Response(response_data, status=status.HTTP_200_OK)
+            json_result = result.model_dump_json()
+            return Response(json_result, status=status.HTTP_200_OK)
 
         except Exception as e:
             return Response({"error": f"Failed to get disease details: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
