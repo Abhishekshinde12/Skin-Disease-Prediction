@@ -47,6 +47,11 @@ source venv/bin/activate
 #### Step4 - Apply DB Migrations
 ```python manage.py migrate```
 
+#### Step5 - Setup Env Variable
+```bash
+# create an .env file and add your LLM API KEY, is using Gemini then add GOOGLE_API_KEY=YOUR_API_KEY
+```
+
 #### Step 5: Run the Django Server
 The backend server will run on `http://localhost:8000`.
 
