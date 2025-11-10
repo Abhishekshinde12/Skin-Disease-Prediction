@@ -39,28 +39,28 @@ source venv/bin/activate
 ```
 
 #### Step2 - Install Dependencies
-```bash pip install -r requirements.txt```
+```pip install -r requirements.txt```
 
 #### Step3 - Create Media Directory - to store user uploaded image
-```bash mkdir media```
+```mkdir media```
 
 #### Step4 - Apply DB Migrations
-```bash python manage.py migrate```
+```python manage.py migrate```
 
 #### Step 5: Run the Django Server
 The backend server will run on `http://localhost:8000`.
 
-```bash python manage.py runserver```
+```python manage.py runserver```
 
 ---
 
 ### 2. Frontend Setup 
 #### Step1 - Navigate to the frontend directory from the project root
-```bash cd frontend```
+```cd frontend```
 #### Step2 - Install Dependencies
-```bash npm install```
+```npm install```
 #### Step3 - Start React Dev Server
-```bash npm run dev```
+```npm run dev```
 
 ---
 
