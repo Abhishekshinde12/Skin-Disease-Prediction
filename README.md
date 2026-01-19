@@ -1,6 +1,6 @@
 # DermAI: AI-Powered Skin Concern Analysis
 
-DermAI is a web application that allows users to upload an image of a skin concern and receive an AI-powered analysis. The backend is built with Django and Django Rest Framework, while the frontend is a modern React application built with Vite.
+DermAI is a web application that allows users to upload an image of a skin and receive an AI-powered analysis. Here we use an EfficientNetB1 for skin disease prediction among the 10 classes on which it's trained and also added an small GenAI Integration to provide more details about the predicted disease for better and more overall understanding. 
 
 ## Features
 
